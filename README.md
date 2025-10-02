@@ -1,33 +1,68 @@
 # Medusa Installation Speed Test: bunx vs. pnpm
 
-This repository contains a simple shell script to benchmark the installation time of a new Medusa store using `bunx` versus `pnpm create`.
+This repository contains a benchmarking setup to compare the installation speed of a new Medusa store using `bunx` versus `pnpm create`.
 
-The test is designed to be run in a clean environment like a GitHub Codespace to ensure consistent results.
+The test runs in a preconfigured dev container environment with Bun and PostgreSQL already installed and configured, ensuring consistent and reliable results.
 
-## How to Run the Test
+## Quick Start
 
-You can easily run this benchmark yourself in a GitHub Codespace.
+1. **Open in GitHub Codespace**: 
+   - Click the "Code" button on this repository's GitHub page
+   - Go to the "Codespaces" tab 
+   - Click "Create codespace on main"
+   - Wait for the dev container to build (this may take a few minutes on first run)
 
-1.  **Open in Codespace**: Click the "Code" button on this repository's GitHub page, go to the "Codespaces" tab, and click "Create codespace on main". This will launch a new, clean development environment in your browser.
+2. **Run the speed test**:
+   ```bash
+   chmod +x speed-test.sh
+   ./speed-test.sh
+   ```
 
-2.  **Make the script executable**: Once the Codespace is loaded and the terminal is available, run the following command to give the script permission to execute:
-    ```bash
-    chmod +x speed-test.sh
-    ```
+That's it! The dev container automatically sets up everything you need.
 
-3.  **Run the test**: Now, you can execute the script:
-    ```bash
-    ./speed-test.sh
-    ```
+## What's Pre-configured
 
-## What the Script Does
+The dev container includes:
+- **Node.js 18** - Base JavaScript runtime
+- **Bun** - Fast JavaScript runtime and package manager
+- **pnpm** - Efficient Node.js package manager
+- **PostgreSQL** - Database server with default configuration:
+  - Host: `localhost`
+  - Port: `5432` 
+  - Username: `postgres`
+  - Password: `1234`
+  - Test databases: `bun_medusa_test` and `pnpm_medusa_test` (created/deleted automatically)
 
-The script will:
-1.  Start a timer and use `bunx create-medusa-app@latest` to scaffold a new Medusa project named `my-medusa-store-bun`. It automatically accepts the default prompts (SQLite database, no demo data).
-2.  Stop the timer and display the time taken for the `bunx` installation.
-3.  Delete the `my-medusa-store-bun` directory.
-4.  Start a new timer and use `pnpm create create-medusa-app@latest` to scaffold a project named `my-medusa-store-pnpm`.
-5.  Stop the timer and display the time taken for the `pnpm` installation.
-6.  Delete the `my-medusa-store-pnpm` directory.
+## How the Test Works
 
-At the end, you will see the `real`, `user`, and `sys` time outputs for both package managers, allowing you to compare their performance directly. The `real` time is the most relevant metric for this comparison.
+The `speed-test.sh` script performs the following steps:
+
+1. **Environment Check**: Verifies that Bun and PostgreSQL are available and running
+2. **Bun Test**: 
+   - Creates a PostgreSQL database named `bun_medusa_test`
+   - Times the execution of `bunx create-medusa-app@latest bun-medusa-store`
+   - Uses PostgreSQL as the database backend
+   - Cleans up the project directory and database
+3. **pnpm Test**:
+   - Creates a PostgreSQL database named `pnpm_medusa_test` 
+   - Times the execution of `pnpm create create-medusa-app@latest pnpm-medusa-store`
+   - Uses PostgreSQL as the database backend
+   - Cleans up the project directory and database
+4. **Results**: Displays timing information for both package managers
+
+## Understanding the Results
+
+The test outputs three timing metrics for each package manager:
+- **real** - The actual wall-clock time (most important for comparison)
+- **user** - CPU time spent in user mode
+- **sys** - CPU time spent in system/kernel mode
+
+Focus on the **real** time to determine which package manager is faster for creating Medusa applications.
+
+## Dev Container Details
+
+The development environment is defined in `.devcontainer/`:
+- `devcontainer.json` - Container configuration and VS Code settings
+- `setup.sh` - Initialization script that installs Bun and configures PostgreSQL
+
+This ensures that every test runs in an identical, clean environment regardless of your local setup.

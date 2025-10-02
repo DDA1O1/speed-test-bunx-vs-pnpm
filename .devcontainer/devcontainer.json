@@ -1,0 +1,42 @@
+{
+    "name": "Medusa Speed Test Environment",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bullseye",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "18"
+        },
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/devcontainers/features/git:1": {}
+    },
+    "postCreateCommand": "bash .devcontainer/setup.sh",
+    "forwardPorts": [5432, 3000, 9000],
+    "portsAttributes": {
+        "5432": {
+            "label": "PostgreSQL"
+        },
+        "3000": {
+            "label": "Medusa Backend"
+        },
+        "9000": {
+            "label": "Medusa Admin"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.vscode-json",
+                "esbenp.prettier-vscode",
+                "bradlc.vscode-tailwindcss"
+            ],
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            }
+        }
+    },
+    "remoteUser": "node",
+    "containerEnv": {
+        "POSTGRES_PASSWORD": "1234",
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_DB": "medusa_test"
+    }
+}

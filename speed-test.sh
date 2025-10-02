@@ -1,10 +1,27 @@
 #!/bin/bash
 
 # This script benchmarks the installation time of a Medusa store
-# using bunx vs pnpm. It automates the process by accepting the
-# default prompts from create-medusa-app.echo "🚀 Starting Medusa installation speed test..."
-echo "This will create and then delete two Medusa projects."
-echo "The script will automatically accept the default prompts (SQLite database, no seed data)."
+# using bunx vs pnpm. It uses the pre-configured PostgreSQL database
+# with credentials postgres:1234.
+
+echo "🚀 Starting Medusa installation speed test..."
+echo "This will create and then delete two Medusa projects using PostgreSQL."
+echo ""
+
+# Start PostgreSQL service (in case it's not running)
+echo "🔧 Ensuring PostgreSQL is running..."
+sudo service postgresql start
+echo ""
+
+# Check if bun is available
+if ! command -v bun &> /dev/null
+then
+    echo "❌ Bun not found. Please make sure the dev container setup completed successfully."
+    exit 1
+fi
+
+echo "✅ Bun is available."
+echo "✅ PostgreSQL is configured with postgres:1234@localhost:5432"
 echo ""
 
 # --- Test for bunx ---
@@ -12,31 +29,44 @@ echo "----------------------------------------"
 echo "🧪 Testing with bunx..."
 echo "----------------------------------------"
 
-# Time the create-medusa-app command with bunx.
-# The `echo -e '\n\n'` pipes two 'Enter' presses to the command,
-# accepting the default database (SQLite) and declining seed data.
-time (echo -e '\n\n' | bunx create-medusa-app@latest my-medusa-store-bun)
+# Create a unique database for the bun test
+sudo -u postgres createdb bun_medusa_test 2>/dev/null || true
+
+# Time the create-medusa-app command with bunx, using PostgreSQL
+time (bunx create-medusa-app@latest bun-medusa-store \
+  --db-url "postgres://postgres:1234@localhost:5432/bun_medusa_test" \
+  --no-boilerplate \
+  --skip-db)
 
 echo "🧹 Cleaning up bunx installation..."
-rm -rf my-medusa-store-bun
-echo "🗑️  Bun project deleted."
+rm -rf bun-medusa-store
+sudo -u postgres dropdb bun_medusa_test 2>/dev/null || true
+echo "🗑️  Bun project and database deleted."
 echo ""
-
 
 # --- Test for pnpm ---
 echo "----------------------------------------"
 echo "🧪 Testing with pnpm..."
 echo "----------------------------------------"
 
-# Time the create-medusa-app command with pnpm.
-time (echo -e '\n\n' | pnpm create create-medusa-app@latest my-medusa-store-pnpm)
+# Create a unique database for the pnpm test
+sudo -u postgres createdb pnpm_medusa_test 2>/dev/null || true
+
+# Time the create-medusa-app command with pnpm, using PostgreSQL
+time (pnpm create create-medusa-app@latest pnpm-medusa-store \
+  --db-url "postgres://postgres:1234@localhost:5432/pnpm_medusa_test" \
+  --no-boilerplate \
+  --skip-db)
 
 echo "🧹 Cleaning up pnpm installation..."
-rm -rf my-medusa-store-pnpm
-echo "🗑️  pnpm project deleted."
+rm -rf pnpm-medusa-store
+sudo -u postgres dropdb pnpm_medusa_test 2>/dev/null || true
+echo "🗑️  pnpm project and database deleted."
 echo ""
-
 
 echo "----------------------------------------"
 echo "🏁 Speed test complete!"
 echo "----------------------------------------"
+echo ""
+echo "📊 Compare the 'real' time values above to see which package manager is faster."
+echo "The 'real' time represents the actual wall-clock time taken for each installation."
