@@ -10,8 +10,12 @@ echo ""
 
 # Start PostgreSQL service (in case it's not running)
 echo "🔧 Ensuring PostgreSQL is running..."
-sudo service postgresql start
+service postgresql start
 echo ""
+
+# Set up Bun environment variables
+export BUN_INSTALL="/root/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
 # Check if bun is available
 if ! command -v bun &> /dev/null
@@ -30,7 +34,7 @@ echo "🧪 Testing with bunx..."
 echo "----------------------------------------"
 
 # Create a unique database for the bun test
-sudo -u postgres createdb bun_medusa_test 2>/dev/null || true
+su - postgres -c "createdb bun_medusa_test" 2>/dev/null || true
 
 # Time the create-medusa-app command with bunx, using PostgreSQL
 time (bunx create-medusa-app@latest bun-medusa-store \
@@ -40,7 +44,7 @@ time (bunx create-medusa-app@latest bun-medusa-store \
 
 echo "🧹 Cleaning up bunx installation..."
 rm -rf bun-medusa-store
-sudo -u postgres dropdb bun_medusa_test 2>/dev/null || true
+su - postgres -c "dropdb bun_medusa_test" 2>/dev/null || true
 echo "🗑️  Bun project and database deleted."
 echo ""
 
@@ -50,7 +54,7 @@ echo "🧪 Testing with pnpm..."
 echo "----------------------------------------"
 
 # Create a unique database for the pnpm test
-sudo -u postgres createdb pnpm_medusa_test 2>/dev/null || true
+su - postgres -c "createdb pnpm_medusa_test" 2>/dev/null || true
 
 # Time the create-medusa-app command with pnpm, using PostgreSQL
 time (pnpm create create-medusa-app@latest pnpm-medusa-store \
@@ -60,7 +64,7 @@ time (pnpm create create-medusa-app@latest pnpm-medusa-store \
 
 echo "🧹 Cleaning up pnpm installation..."
 rm -rf pnpm-medusa-store
-sudo -u postgres dropdb pnpm_medusa_test 2>/dev/null || true
+su - postgres -c "dropdb pnpm_medusa_test" 2>/dev/null || true
 echo "🗑️  pnpm project and database deleted."
 echo ""
 

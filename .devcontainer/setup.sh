@@ -3,30 +3,30 @@
 echo "🚀 Setting up development environment..."
 
 # Update package lists
-sudo apt-get update
+apt-get update
 
 # Install PostgreSQL
 echo "📦 Installing PostgreSQL..."
-sudo apt-get install -y postgresql postgresql-contrib
+apt-get install -y postgresql postgresql-contrib
 
 # Start PostgreSQL service
-sudo service postgresql start
+service postgresql start
 
 # Configure PostgreSQL
 echo "🔧 Configuring PostgreSQL..."
-sudo -u postgres psql -c "ALTER USER postgres PASSWORD '1234';"
-sudo -u postgres createdb medusa_test
+su - postgres -c "psql -c \"ALTER USER postgres PASSWORD '1234';\""
+su - postgres -c "createdb medusa_test"
 
 # Install Bun
 echo "📦 Installing Bun..."
 curl -fsSL https://bun.sh/install | bash
 
 # Add Bun to PATH for all users
-echo 'export BUN_INSTALL="$HOME/.bun"' >> ~/.bashrc
-echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> ~/.bashrc
+echo 'export BUN_INSTALL="/root/.bun"' >> /root/.bashrc
+echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> /root/.bashrc
 
 # Source bashrc to make bun available immediately
-source ~/.bashrc
+source /root/.bashrc
 
 # Install pnpm (if not already installed)
 echo "📦 Installing pnpm..."
@@ -34,7 +34,15 @@ npm install -g pnpm
 
 # Make PostgreSQL start automatically
 echo "🔄 Configuring PostgreSQL to start automatically..."
-echo "sudo service postgresql start" >> ~/.bashrc
+echo "service postgresql start" >> /root/.bashrc
+
+# Create a startup script for PostgreSQL
+cat > /usr/local/bin/start-postgres.sh << 'EOF'
+#!/bin/bash
+service postgresql start
+EOF
+
+chmod +x /usr/local/bin/start-postgres.sh
 
 echo "✅ Development environment setup complete!"
 echo "📋 PostgreSQL Configuration:"
